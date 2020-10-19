@@ -20,17 +20,40 @@ class RRState:
         RRState.state_id += 1
 
     def __lt__(self, other):
-    	""" Este método é utilizado em caso de empate na gestão da lista
-        de abertos nas procuras informadas. """
+        """ Este método é utilizado em caso de empate na gestão da lista de abertos nas procuras informadas """
         return self.id < other.id
 
 
 class Board:
     """ Representacao interna de um tabuleiro de Ricochet Robots. """
+    def __init__(self):
+        self.walls = {}
+        self.robots = {}
+        self.target = []
+
+    def create_outside_walls(self, size):
+        for i in range(1, size + 1):
+            self.set_wall((i, 1), 'l')
+            self.set_wall((1, i), 'u')
+            self.set_wall((i, size), 'r')
+            self.set_wall((size, i), 'd')
+
+    def set_robot(self, colour, position):
+        self.robots[colour] = position
+        pass
+
+    def set_wall(self, position, side):
+        if position in self.walls.keys():
+            self.walls[position] += side
+        else:
+            self.walls[position] = [side]
+
+    def set_target(self, colour, position):
+        self.target = [colour, position]
 
     def robot_position(self, robot: str):
         """ Devolve a posição atual do robô passado como argumento. """
-        # TODO
+        return self.robots[robot]
         pass
 
     # TODO: outros metodos da classe
@@ -39,6 +62,36 @@ class Board:
 def parse_instance(filename: str) -> Board:
     """ Lê o ficheiro cujo caminho é passado como argumento e retorna
     uma instância da classe Board. """
+    f = open(filename, 'r')
+
+    board = Board()
+    board.create_outside_walls(eval(f.readline()))
+
+    for i in range(4):
+        args = f.readline().split(" ")
+        colour = args[0]
+        position = (eval(args[1]), eval(args[2]))
+        board.set_robot(colour, position)
+
+    args = f.readline().split(" ")
+    board.set_target(args[0], (eval(args[1]), eval(args[2])))
+
+    for i in range(eval(f.readline())):
+        args = f.readline().replace('\n', ' ').split(" ")
+        position = (eval(args[0]), eval(args[1]))
+        side = args[2]
+        board.set_wall(position, side)
+
+        if side == 'r':
+            board.set_wall((position[0], position[1] + 1), 'l')
+        elif side == 'l':
+            board.set_wall((position[0], position[1] - 1), 'r')
+        elif side == 'u':
+            board.set_wall((position[0] - 1, position[1]), 'd')
+        elif side == 'd':
+            board.set_wall((position[0] + 1, position[1]), 'u')
+        
+    return board
     # TODO
     pass
 
@@ -82,4 +135,6 @@ if __name__ == "__main__":
     # Usar uma técnica de procura para resolver a instância,
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
+    board = parse_instance(sys.argv[1])
+    print(board.robot_position('Y'))
     pass
