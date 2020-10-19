@@ -3,7 +3,7 @@
 # Além das funções e classes já definidas, podem acrescentar outras que considerem pertinentes.
 
 # Grupo 17:
-# 93699 Daniel Quintas
+# 93696 Daniel Quintas
 # 93750 Ricardo Andrade
 
 from search import Problem, Node, astar_search, breadth_first_tree_search, \
