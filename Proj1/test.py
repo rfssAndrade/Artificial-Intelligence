@@ -8,7 +8,7 @@ from search import astar_search, breadth_first_tree_search, \
 
 def test1():
     # Ler tabuleiro do ficheiro i1.txt:
-    board = parse_instance('i1.txt')
+    board = parse_instance('instances/i1.txt')
 
     # Imprimir as posições dos robôs:
     print(board.robot_position('Y'))
@@ -18,7 +18,7 @@ def test1():
 
 def test2():
     # Ler tabuleiro do ficheiro 'i1.txt':
-    board = parse_instance('i1.txt')
+    board = parse_instance('instances/i1.txt')
 
     # Criar uma instância de RicochetRobots:
     problem = RicochetRobots(board)
@@ -34,7 +34,7 @@ def test2():
 
 def test3():
     # Ler tabuleiro do ficheiro "i1.txt":
-    board = parse_instance("i1.txt")
+    board = parse_instance("instances/i1.txt")
 
     # Criar uma instância de RicochetRobots:
     problem = RicochetRobots(board)
@@ -54,7 +54,7 @@ def test3():
 
 def test4():
     # Ler tabuleiro do ficheiro "i1.txt":
-    board = parse_instance("i1.txt")
+    board = parse_instance("instances/i1.txt")
 
     # Criar uma instância de RicochetRobots:
     problem = RicochetRobots(board)
