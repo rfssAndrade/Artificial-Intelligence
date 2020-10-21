@@ -2,13 +2,14 @@
 # Devem alterar as classes e funções neste ficheiro de acordo com as instruções do enunciado.
 # Além das funções e classes já definidas, podem acrescentar outras que considerem pertinentes.
 
-# Grupo 17:
+# Grupo al017:
 # 93696 Daniel Quintas
 # 93750 Ricardo Andrade
 
 from search import Problem, Node, astar_search, breadth_first_tree_search, \
     depth_first_tree_search, greedy_search
 import sys
+import copy
 
 
 class RRState:
@@ -61,35 +62,34 @@ class Board:
 
         for robot in self.robots.keys():
             position = self.robot_position(robot)
-            if 'l' not in self.walls[position] and (position[0], position[1] - 1) not in self.robots.values():
+            if (position not in self.walls.keys() or 'l' not in self.walls[position]) and (position[0], position[1] - 1) not in self.robots.values():
                 moves.append((robot, 'l'))
-            if 'r' not in self.walls[position] and (position[0], position[1] + 1) not in self.robots.values():
+            if (position not in self.walls.keys() or 'r' not in self.walls[position]) and (position[0], position[1] + 1) not in self.robots.values():
                 moves.append((robot, 'r'))
-            if 'd' not in self.walls[position] and (position[0] + 1, position[1]) not in self.robots.values():
+            if (position not in self.walls.keys() or 'd' not in self.walls[position]) and (position[0] + 1, position[1]) not in self.robots.values():
                 moves.append((robot, 'd'))
-            if 'u' not in self.walls[position] and (position[0] - 1, position[1]) not in self.robots.values():
+            if (position not in self.walls.keys() or 'u' not in self.walls[position]) and (position[0] - 1, position[1]) not in self.robots.values():
                 moves.append((robot, 'u'))
-
         return moves
 
     def move_robot(self, action):
         position = self.robots[action[0]]
         direction = action[1]
-
-        while position not in self.walls.keys() direction not in self.walls[position]:
-            if direction == 'l':
-                position = (position[0], position[1] - 1)
-            elif direction == 'r':
+        del self.robots[action[0]]
+        
+        while ((position not in self.walls.keys() or direction not in self.walls[position])):
+            if direction == 'l' and (position[0], position[1] - 1) not in self.robots.values():
+                    position = (position[0], position[1] - 1)
+            elif direction == 'r' and (position[0], position[1] + 1) not in self.robots.values():
                 position = (position[0], position[1] + 1)
-            elif direction == 'd':
+            elif direction == 'd' and (position[0] + 1, position[1]) not in self.robots.values():
                 position = (position[0] + 1, position[1])
-            elif direction == 'u':
+            elif direction == 'u' and (position[0] - 1, position[1]) not in self.robots.values():
                 position = (position[0] - 1, position[1])
+            else:
+                break
 
         self.robots[action[0]] = position
-
-
-    # TODO: outros metodos da classe
 
 
 def parse_instance(filename: str) -> Board:
@@ -123,9 +123,10 @@ def parse_instance(filename: str) -> Board:
             board.set_wall((position[0] - 1, position[1]), 'd')
         elif side == 'd':
             board.set_wall((position[0] + 1, position[1]), 'u')
+
+    f.close()
         
     return board
-    # TODO
     pass
 
 
@@ -140,7 +141,6 @@ class RicochetRobots(Problem):
         """ Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento. """
         return state.board.possible_moves()
-        # TODO
         pass
 
     def result(self, state: RRState, action):
@@ -148,33 +148,41 @@ class RicochetRobots(Problem):
         'state' passado como argumento. A ação retornada deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state). """
-        new_state = state.board.move_robot(action)
-        return RRState(new_state.board)
-        # TODO
+        new_board = copy.deepcopy(state.board)
+        new_board.move_robot(action)
+        return RRState(new_board)
         pass
 
     def goal_test(self, state: RRState):
         """ Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se o alvo e o robô da
         mesma cor ocupam a mesma célula no tabuleiro. """
-        # TODO
         return state.board.robots[state.board.target[0]] == state.board.target[1]
         pass
 
     def h(self, node: Node):
         """ Função heuristica utilizada para a procura A*. """
-        # TODO
+        colour = node.state.board.target[0]
+        target_position = node.state.board.target[1]
+        robot_position = node.state.board.robot_position(colour)
+        
+        dx = abs(target_position[0] - robot_position[0])
+        dy = abs(target_position[1] - robot_position[1])
+        
+        return node.path_cost * (dx + dy)
         pass
 
 
 if __name__ == "__main__":
-    # TODO:
     # Ler o ficheiro de input de sys.argv[1],
     # Usar uma técnica de procura para resolver a instância,
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
     board = parse_instance(sys.argv[1])
     problem = RicochetRobots(board)
-    board.move_robot(('Y', 'u'))
-    print(board.robots)
+    node = astar_search(problem)
+
+    print(len(node.solution()))
+    for e in node.solution():
+        print(e[0], e[1])
     pass
