@@ -7,9 +7,12 @@
 # 93750 Ricardo Andrade
 
 from search import Problem, Node, astar_search, breadth_first_tree_search, \
-    depth_first_tree_search, greedy_search
+    depth_first_tree_search, greedy_search, recursive_best_first_search
 import sys
 import copy
+import time
+import numpy as np
+import math
 
 
 class RRState:
@@ -24,24 +27,110 @@ class RRState:
         """ Este método é utilizado em caso de empate na gestão da lista de abertos nas procuras informadas """
         return self.id < other.id
 
+    def __eq__(self, other):
+        return self.board.robots == other.board.robots
+
+    def __hash__(self):
+        sorted_keys = self.board.robots.keys()
+        values = self.board.robots.values()
+
+        return hash(str(sorted_keys) + str(values))
+
+
 
 class Board:
     """ Representacao interna de um tabuleiro de Ricochet Robots. """
     def __init__(self):
-        self.walls = {}
+        self.size = 0
         self.robots = {}
         self.target = []
+        self.walls = {}
+        self.cost_board = []
+    
+    def parsed_to_board(self, size, robots, target, walls):
+        self.size = size
+        self.set_walls(walls)
+        self.set_target(target[0], target[1])
+        self.set_cost_board()
+        self.set_robots(robots)
+    
+    def set_all(self, size, robots, target, walls, cost_board):
+        self.size = size
+        self.robots = robots
+        self.target = target
+        self.walls = walls
+        self.cost_board = cost_board
 
-    def create_outside_walls(self, size):
-        for i in range(1, size + 1):
-            self.set_wall((i, 1), 'l')
-            self.set_wall((1, i), 'u')
-            self.set_wall((i, size), 'r')
-            self.set_wall((size, i), 'd')
+    def set_robots(self, robots):
+        for robot in robots:
+            self.set_robot(robot[0], robot[1])
+
 
     def set_robot(self, colour, position):
         self.robots[colour] = position
         pass
+
+    def set_cost_board(self):
+        self.cost_board = np.full((self.size, self.size), -1, dtype=int)
+        self.cost_board[self.target[1][0]-1,self.target[1][1]-1] = 0
+
+        to_expand = [(self.target[1][0], self.target[1][1])]
+
+        while(to_expand):
+            next_position = to_expand.pop(0)
+            to_expand += self.expand(next_position)
+
+    def expand(self, position):
+        cost = self.cost_board[position[0]-1, position[1]-1] + 1
+
+        directions = []
+        for e in self.possible_moves_robot(self.target[0], position):
+            directions += e[1]
+        
+        result = []
+        original_position = position
+        for direction in directions:
+            position = original_position
+            while ((self.target[0], direction) in self.possible_moves_robot(self.target[0], position)):
+                l = [position[0]-1, position[1]-2]
+                r = [position[0]-1, position[1]]
+                d = [position[0], position[1]-1]
+                u = [position[0]-2, position[1]-1]
+                if direction == 'l' and self.cost_board[position[0]-1, position[1]-2] == -1:
+                    position = (position[0], position[1] - 1)
+                elif direction == 'r' and self.cost_board[position[0]-1, position[1]] == -1:
+                    position = (position[0], position[1] + 1)
+                elif direction == 'd' and self.cost_board[position[0], position[1]-1] == -1:
+                    position = (position[0] + 1, position[1])
+                elif direction == 'u'and self.cost_board[position[0]-2, position[1]-1] == -1:
+                    position = (position[0] - 1, position[1])
+                else:
+                    break
+                if self.cost_board[position[0]-1, position[1]-1] == -1:
+                    result += [position]
+                    self.cost_board[position[0]-1, position[1]-1] = cost
+        return result
+
+    def set_walls(self, walls):
+        self.set_outside_walls()
+
+        for wall in walls:
+            self.set_wall(wall[0], wall[1])
+            if wall[1] == 'r':
+                self.set_wall((wall[0][0], wall[0][1] + 1), 'l')
+            elif wall[1] == 'l':
+                self.set_wall((wall[0][0], wall[0][1] - 1), 'r')
+            elif wall[1] == 'u':
+                self.set_wall((wall[0][0] - 1, wall[0][1]), 'd')
+            elif wall[1] == 'd':
+                self.set_wall((wall[0][0] + 1, wall[0][1]), 'u')
+        
+    def set_outside_walls(self):
+        for i in range(1, self.size + 1):
+            self.set_wall((i, 1), 'l')
+            self.set_wall((1, i), 'u')
+            self.set_wall((i, self.size), 'r')
+            self.set_wall((self.size, i), 'd')
 
     def set_wall(self, position, side):
         if position in self.walls.keys():
@@ -61,30 +150,36 @@ class Board:
         moves = []
 
         for robot in self.robots.keys():
-            position = self.robot_position(robot)
-            if (position not in self.walls.keys() or 'l' not in self.walls[position]) and (position[0], position[1] - 1) not in self.robots.values():
-                moves.append((robot, 'l'))
-            if (position not in self.walls.keys() or 'r' not in self.walls[position]) and (position[0], position[1] + 1) not in self.robots.values():
-                moves.append((robot, 'r'))
-            if (position not in self.walls.keys() or 'd' not in self.walls[position]) and (position[0] + 1, position[1]) not in self.robots.values():
-                moves.append((robot, 'd'))
-            if (position not in self.walls.keys() or 'u' not in self.walls[position]) and (position[0] - 1, position[1]) not in self.robots.values():
-                moves.append((robot, 'u'))
+            moves += self.possible_moves_robot(robot, self.robot_position(robot))
+        
+        return moves
+    
+    def possible_moves_robot(self, robot, position):
+        moves = []
+
+        if (position not in self.walls.keys() or 'l' not in self.walls[position]) and (position[0], position[1] - 1) not in self.robots.values():
+            moves.append((robot, 'l'))
+        if (position not in self.walls.keys() or 'r' not in self.walls[position]) and (position[0], position[1] + 1) not in self.robots.values():
+            moves.append((robot, 'r'))
+        if (position not in self.walls.keys() or 'u' not in self.walls[position]) and (position[0] - 1, position[1]) not in self.robots.values():
+            moves.append((robot, 'u'))
+        if (position not in self.walls.keys() or 'd' not in self.walls[position]) and (position[0] + 1, position[1]) not in self.robots.values():
+            moves.append((robot, 'd'))
         return moves
 
     def move_robot(self, action):
-        position = self.robots[action[0]]
+        robot = action[0]
+        position = self.robots[robot]
         direction = action[1]
-        del self.robots[action[0]]
         
-        while ((position not in self.walls.keys() or direction not in self.walls[position])):
-            if direction == 'l' and (position[0], position[1] - 1) not in self.robots.values():
-                    position = (position[0], position[1] - 1)
-            elif direction == 'r' and (position[0], position[1] + 1) not in self.robots.values():
+        while ((robot, direction) in self.possible_moves_robot(robot, position)):
+            if direction == 'l':
+                position = (position[0], position[1] - 1)
+            elif direction == 'r':
                 position = (position[0], position[1] + 1)
-            elif direction == 'd' and (position[0] + 1, position[1]) not in self.robots.values():
+            elif direction == 'd':
                 position = (position[0] + 1, position[1])
-            elif direction == 'u' and (position[0] - 1, position[1]) not in self.robots.values():
+            elif direction == 'u':
                 position = (position[0] - 1, position[1])
             else:
                 break
@@ -97,38 +192,26 @@ def parse_instance(filename: str) -> Board:
     uma instância da classe Board. """
     f = open(filename, 'r')
 
-    board = Board()
-    board.create_outside_walls(eval(f.readline()))
+    board_size = eval(f.readline())
 
+    board_robots = []
     for i in range(4):
         args = f.readline().split(" ")
-        colour = args[0]
-        position = (eval(args[1]), eval(args[2]))
-        board.set_robot(colour, position)
+        board_robots += [[args[0], (eval(args[1]), eval(args[2]))]]
 
     args = f.readline().split(" ")
-    board.set_target(args[0], (eval(args[1]), eval(args[2])))
+    board_target = [args[0], (eval(args[1]), eval(args[2]))]
 
+    board_walls = [] 
     for i in range(eval(f.readline())):
         args = f.readline().replace('\n', ' ').split(" ")
-        position = (eval(args[0]), eval(args[1]))
-        side = args[2]
-        board.set_wall(position, side)
-
-        if side == 'r':
-            board.set_wall((position[0], position[1] + 1), 'l')
-        elif side == 'l':
-            board.set_wall((position[0], position[1] - 1), 'r')
-        elif side == 'u':
-            board.set_wall((position[0] - 1, position[1]), 'd')
-        elif side == 'd':
-            board.set_wall((position[0] + 1, position[1]), 'u')
+        board_walls += [[(eval(args[0]), eval(args[1])), args[2]]]
 
     f.close()
         
+    board = Board()
+    board.parsed_to_board(board_size, board_robots, board_target, board_walls)
     return board
-    pass
-
 
 class RicochetRobots(Problem):
     def __init__(self, board: Board):
@@ -148,9 +231,14 @@ class RicochetRobots(Problem):
         'state' passado como argumento. A ação retornada deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state). """
-        new_board = copy.deepcopy(state.board)
-        new_board.move_robot(action)
-        return RRState(new_board)
+        robots = copy.deepcopy(state.board.robots)
+
+        board = Board()
+        board.set_all(state.board.size, robots, state.board.target, state.board.walls, state.board.cost_board)
+
+        board.move_robot(action)
+
+        return RRState(board)
         pass
 
     def goal_test(self, state: RRState):
@@ -165,12 +253,12 @@ class RicochetRobots(Problem):
         colour = node.state.board.target[0]
         target_position = node.state.board.target[1]
         robot_position = node.state.board.robot_position(colour)
+
+        dx = abs(target_position[0] - robot_position[0])**2
+        dy = abs(target_position[1] - robot_position[1])**2
         
-        dx = abs(target_position[0] - robot_position[0])
-        dy = abs(target_position[1] - robot_position[1])
-        
-        return node.path_cost * (dx + dy)
-        pass
+        # print("Id = ",node.state.id," Cost = ", node.state.board.cost_board[robot_position[0]-1][robot_position[1]-1])
+        return math.sqrt(dx + dy) + node.state.board.cost_board[robot_position[0]-1][robot_position[1]-1]
 
 
 if __name__ == "__main__":
@@ -178,11 +266,18 @@ if __name__ == "__main__":
     # Usar uma técnica de procura para resolver a instância,
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
+
+    # start = time.time()
+
     board = parse_instance(sys.argv[1])
+    # board = parse_instance("/Users/danielquintas8/Documents/GitHub/IA/Proj1/instances/i4.txt")
     problem = RicochetRobots(board)
+    # node = recursive_best_first_search(problem)
     node = astar_search(problem)
 
     print(len(node.solution()))
     for e in node.solution():
         print(e[0], e[1])
+    
+    # print(time.time() - start)
     pass
