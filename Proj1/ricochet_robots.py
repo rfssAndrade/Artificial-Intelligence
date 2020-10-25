@@ -7,11 +7,12 @@
 # 93750 Ricardo Andrade
 
 from search import Problem, Node, astar_search, breadth_first_tree_search, \
-    depth_first_tree_search, greedy_search, recursive_best_first_search
+    depth_first_tree_search, greedy_search, recursive_best_first_search, InstrumentedProblem
 import sys
 import copy
 import numpy as np
 import math
+import time
 
 
 
@@ -289,12 +290,19 @@ class RicochetRobots(Problem):
 
 
 if __name__ == "__main__":
+    start_time = time.time()
     board = parse_instance(sys.argv[1])
-    problem = RicochetRobots(board)
+    problem = InstrumentedProblem(RicochetRobots(board))
+    # node = breadth_first_tree_search(problem)
+    # node = depth_first_tree_search(problem)
+    # node = greedy_search(problem)
+    # node = astar_search(problem)
     node = recursive_best_first_search(problem)
 
     print(len(node.solution()))
     for e in node.solution():
         print(e[0], e[1])
     
+    print("Time = ",time.time() - start_time)
+    print(problem)
     pass
