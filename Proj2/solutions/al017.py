@@ -93,7 +93,7 @@ def B(q):
 def Remainder(case0, case1, total):
     return ((case0[0] + case0[1]) / total) * B(case0[0] / (case0[0] + case0[1]))
     
-    
+
 def decisionTreeLearning(examples, attributes, parent_examples):
     if not examples:
         return plurality_value(parent_examples)
@@ -116,6 +116,6 @@ def decisionTreeLearning(examples, attributes, parent_examples):
 #                   [0,1],
 #                   [1,0],
 #                   [1,1]])
-# Y = np.array([0, 0,0,1])
+# Y = np.array([0,0,0,1])
 # T = createdecisiontree(D, Y)
 # print(T)
