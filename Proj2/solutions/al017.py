@@ -22,12 +22,14 @@ def createdecisiontree(D,Y, noise = False):
 
 
 def plurality_value(examples):
-    singlelistExamples = []
+    n0 = 0
+    n1 = 0
     for example in examples:
-        singlelistExamples += example
-        
-    n0 = singlelistExamples.count(0)
-    n1 = singlelistExamples.count(1)
+        if example[-1] == 0:
+            n0 += 1
+        else:
+            n1 += 1
+
     if n0 == n1:
         return random.choice([0,1])
     else:
@@ -43,7 +45,7 @@ def allHaveSameY(examples):
 def getAValueExamples(examples, A, value):
     AValueExamples = [] 
     for example in examples:
-        if example[A][-1] == value:
+        if example[A] == value:
             AValueExamples += [example]
     return AValueExamples
 
@@ -96,5 +98,11 @@ def decisionTreeLearning(examples, attributes, parent_examples):
             AValueExamples = getAValueExamples(examples, A, value)
             attributesNonA = attributes[:A] + attributes[A+1:]
             subtree = decisionTreeLearning(AValueExamples, attributesNonA, examples)
+            print("HERE",subtree)
             tree += [subtree]
     return tree
+
+
+D = [[0,0],[0,1],[1,0],[1,1]]
+Y = [0,0,0,1]
+print(createdecisiontree(D,Y))
