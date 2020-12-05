@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Grupo alxxx
-Student id #77777
-Student id #77777
+Grupo al017
+Student id #93696
+Student id #93750
 """
 
 import numpy as np
