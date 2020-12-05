@@ -8,10 +8,12 @@ Student id #93750
 import numpy as np
 import random
 import math
+import copy
 
 def createdecisiontree(D,Y, noise = False):
-    D = D.tolist()
-    Y = Y.tolist()
+    D = D.astype(int).tolist()
+    Y = Y.astype(int).tolist()
+
     nAttributes = len(D[0])
     attributes = list(range(nAttributes))
     examples = []
@@ -19,6 +21,8 @@ def createdecisiontree(D,Y, noise = False):
         examples += [D[e] + [Y[e]]]
 
     tree = decisionTreeLearning(examples, attributes, examples)
+    if type(tree) == int:
+        tree = [0, tree, tree]
     return tree
 
 
@@ -106,16 +110,17 @@ def decisionTreeLearning(examples, attributes, parent_examples):
         tree = [A]
         for value in [0,1]:
             AValueExamples = getAValueExamples(examples, A, value)
-            attributesNonA = attributes[:A] + attributes[A+1:]
-            subtree = decisionTreeLearning(AValueExamples, attributesNonA, examples)
+            nattributes = copy.deepcopy(attributes)
+            nattributes.remove(A)
+            subtree = decisionTreeLearning(AValueExamples, nattributes, examples)
             tree += [subtree]
     return tree
 
 # D = np.array([
-#                   [0,0],
-#                   [0,1],
-#                   [1,0],
-#                   [1,1]])
-# Y = np.array([0,0,0,1])
+#                   [False,False],
+#                   [False,True],
+#                   [True,False],
+#                   [True,True]])
+# Y = np.array([False,False,False,True])
 # T = createdecisiontree(D, Y)
 # print(T)
