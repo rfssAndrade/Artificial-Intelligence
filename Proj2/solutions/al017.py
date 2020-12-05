@@ -10,6 +10,8 @@ import random
 import math
 
 def createdecisiontree(D,Y, noise = False):
+    D = D.tolist()
+    Y = Y.tolist()
     nAttributes = len(D[0])
     attributes = list(range(nAttributes))
     examples = []
@@ -17,7 +19,6 @@ def createdecisiontree(D,Y, noise = False):
         examples += [D[e] + [Y[e]]]
 
     tree = decisionTreeLearning(examples, attributes, examples)
-    
     return tree
 
 
@@ -35,6 +36,7 @@ def plurality_value(examples):
     else:
         return 0 if n0 > n1 else 1
 
+
 def allHaveSameY(examples):
     y = examples[0][-1]
     for example in examples:
@@ -49,6 +51,7 @@ def getAValueExamples(examples, A, value):
             AValueExamples += [example]
     return AValueExamples
 
+
 def Importance(attributes, examples):
     higherGain = (0, 0)
     for attribute in attributes:
@@ -57,6 +60,7 @@ def Importance(attributes, examples):
             higherGain = (attribute, temp)
 
     return higherGain[0]
+
 
 def Gain(attribute, examples):
     total = len(examples)
@@ -78,11 +82,17 @@ def Gain(attribute, examples):
 
     return B(positives / total) + Remainder(case0, case1, total)
 
+
 def B(q):
+    if q in [0, 1]:
+        return 0
+        
     return -(q * math.log2(q) + (1 - q) * math.log2(1 - q))
+
 
 def Remainder(case0, case1, total):
     return ((case0[0] + case0[1]) / total) * B(case0[0] / (case0[0] + case0[1]))
+    
     
 def decisionTreeLearning(examples, attributes, parent_examples):
     if not examples:
@@ -98,11 +108,14 @@ def decisionTreeLearning(examples, attributes, parent_examples):
             AValueExamples = getAValueExamples(examples, A, value)
             attributesNonA = attributes[:A] + attributes[A+1:]
             subtree = decisionTreeLearning(AValueExamples, attributesNonA, examples)
-            print("HERE",subtree)
             tree += [subtree]
     return tree
 
-
-D = [[0,0],[0,1],[1,0],[1,1]]
-Y = [0,0,0,1]
-print(createdecisiontree(D,Y))
+# D = np.array([
+#                   [0,0],
+#                   [0,1],
+#                   [1,0],
+#                   [1,1]])
+# Y = np.array([0, 0,0,1])
+# T = createdecisiontree(D, Y)
+# print(T)
