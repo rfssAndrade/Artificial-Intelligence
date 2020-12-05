@@ -84,7 +84,7 @@ def Gain(attribute, examples):
             else:
                 case0[1] += 1
 
-    return B(positives / total) + Remainder(case0, case1, total)
+    return B(positives / total) - Remainder(case0, case1, total)
 
 
 def B(q):
@@ -95,7 +95,7 @@ def B(q):
 
 
 def Remainder(case0, case1, total):
-    return ((case0[0] + case0[1]) / total) * B(case0[0] / (case0[0] + case0[1]))
+    return ((case0[0] + case0[1]) / total) * B(case0[0] / (case0[0] + case0[1])) + ((case1[0] + case1[1]) / total) * B(case1[0] / (case1[0] + case1[1]))
     
 
 def decisionTreeLearning(examples, attributes, parent_examples):
@@ -117,10 +117,20 @@ def decisionTreeLearning(examples, attributes, parent_examples):
     return tree
 
 # D = np.array([
-#                   [False,False],
-#                   [False,True],
-#                   [True,False],
-#                   [True,True]])
-# Y = np.array([False,False,False,True])
+#                   [0,0],
+#                   [0,1],
+#                   [1,0],
+#                   [1,1]])
+# Y = np.array([1,1,0,0])
+# # D3 = np.array([
+# #               [0,0,0],
+# #               [0,0,1],
+# #               [0,1,0],
+# #               [0,1,1],
+# #               [1,0,0],
+# #               [1,0,1],
+# #               [1,1,0],
+# #               [1,1,1]])
+# # Y = np.array([0,1,1,0,0,1,1,0])
 # T = createdecisiontree(D, Y)
 # print(T)
