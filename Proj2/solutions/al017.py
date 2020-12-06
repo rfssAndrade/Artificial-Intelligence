@@ -152,10 +152,14 @@ def redux(tree):
     if type(tree) == int:
         return tree
     
-    elif tree[1] == tree[2]:
+    elif type(tree[1]) == list and type(tree[1]) == list and tree[1] == tree[2]:
         tree[0] = tree[1][0]
         tree[2] = tree[1][2]
         tree[1] = tree[1][1]
+    
+    elif tree[1] == tree[2]:
+        tree = tree[1]
+        return tree
     
     tree[1] = redux(tree[1])
     tree[2] = redux(tree[2])
@@ -234,3 +238,7 @@ def switchFatherGrandFather(tree):
 # print(prunning(tree1))
 # print(len(str(prunning(tree1))))
 # print(prunning(tree2))
+
+# tree3 = [0,[1,[3,0,1],[4,[6,[7,0,1],1],[6,[7,0,1],1]]],[2,[5,0,1],0]]
+# print(prunning(tree3))
+# tree3final = [0,[1,[3,0,1],[6,[7,0,1],1]],[2,[5,0,1],0]]
