@@ -21,7 +21,7 @@ def createdecisiontree(D,Y, noise = False):
         examples += [D[e] + [Y[e]]]
 
     tree = decisionTreeLearning(examples, attributes, examples)
-    tree = redux(tree)
+    tree = prunning(tree)
 
     # print("#################### DONE 1: " + str(tree))
     if type(tree) == int:
@@ -147,7 +147,8 @@ def decisionTreeLearning(examples, attributes, parent_examples):
             tree += [subtree]
     return tree
 
-def redux(tree, repeat = False):
+
+def redux(tree):
     if type(tree) == int:
         return tree
     
@@ -156,13 +157,26 @@ def redux(tree, repeat = False):
         tree[2] = tree[1][2]
         tree[1] = tree[1][1]
     
-    elif type(tree[1]) == list and type(tree[2]) == list and tree[1][0] == tree[2][0]:
-        if not repeat:        
-            tree = switchFatherGrandFather(tree)
-            tree = redux(tree, True)
-    
     tree[1] = redux(tree[1])
     tree[2] = redux(tree[2])
+
+    return tree
+
+
+def prunning(tree):
+    if type(tree) == int:
+        return tree
+    
+    elif type(tree[1]) == list and type(tree[2]) == list and tree[1][0] == tree[2][0]:
+        newTree = copy.deepcopy(tree)
+        newTree = switchFatherGrandFather(newTree)
+        tree = redux(tree)
+        newTree = redux(newTree)
+        if len(str(newTree)) < len(str(tree)):
+            tree = newTree
+    
+    tree[1] = prunning(tree[1])
+    tree[2] = prunning(tree[2])
 
     return tree
 
@@ -178,14 +192,14 @@ def switchFatherGrandFather(tree):
     return tree
 
 
-def redundance(beginTree, examples, attributes):
-    attributes.remove(beginTree)
-    leftExamples = getAValueExamples(examples, beginTree, 0)
-    rightExamples = getAValueExamples(examples, beginTree, 1)
-    left = decisionTreeLearning(leftExamples, attributes, leftExamples)
-    right = decisionTreeLearning(rightExamples, attributes, rightExamples)
+# def redundance(beginTree, examples, attributes):
+#     attributes.remove(beginTree)
+#     leftExamples = getAValueExamples(examples, beginTree, 0)
+#     rightExamples = getAValueExamples(examples, beginTree, 1)
+#     left = decisionTreeLearning(leftExamples, attributes, leftExamples)
+#     right = decisionTreeLearning(rightExamples, attributes, rightExamples)
 
-    return [beginTree, left, right]
+#     return [beginTree, left, right]
 
 # D = np.array([
 #                   [0,0],
@@ -214,5 +228,9 @@ def redundance(beginTree, examples, attributes):
 # Y = ((D[:,1] == 0) & (D[:,6] == 0)) | ((D[:,3] == 1) & (D[:,4] == 1) | ((D[:,11] == 1) & (D[:,6] == 1)))
 # T = createdecisiontree(D, Y)
 
-# tree = [6,[11,[1,1,[3,0,[4,0,1]]],[1,1,[3,0,[4,0,1]]]],[11,[4,0,[3,0,1]],1]]
-# print(redux(tree))
+# tree1 = [11,[6,[1,1,[3,0,[4,0,1]]],[4,0,[3,0,1]]],[6,[1,1,[3,0,[4,0,1]]],1]]
+# tree2 = [6,[11,[1,1,[3,0,[4,0,1]]],[1,1,[3,0,[4,0,1]]]],[11,[4,0,[3,0,1]],1]]
+# print(tree1)
+# print(prunning(tree1))
+# print(len(str(prunning(tree1))))
+# print(prunning(tree2))
