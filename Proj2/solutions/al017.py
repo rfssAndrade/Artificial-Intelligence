@@ -21,6 +21,7 @@ def createdecisiontree(D,Y, noise = False):
         examples += [D[e] + [Y[e]]]
 
     tree = decisionTreeLearning(examples, attributes, examples)
+    tree = redux(tree)
     if type(tree) == int:
         tree = [0, tree, tree]
     return tree
@@ -129,20 +130,37 @@ def decisionTreeLearning(examples, attributes, parent_examples):
             tree += [subtree]
     return tree
 
+def redux(tree):
+    if type(tree) == int:
+        return tree
+    elif tree[1] == tree[2]:
+        tree[0] = tree[1][0]
+        tree[2] = tree[1][2]
+        tree[1] = tree[1][1]
+        
+    tree[1] = redux(tree[1])
+    tree[2] = redux(tree[2])
+    return tree
+
 # D = np.array([
 #                   [0,0],
 #                   [0,1],
 #                   [1,0],
 #                   [1,1]])
 # Y = np.array([1,1,0,0])
-# D3 = np.array([[1, 0, 0, 0],
-#                 [0, 0, 0, 1],
-#                 [1, 0, 1, 0],
-#                 [0, 0, 1, 1],
-#                 [1, 1, 0, 0],
-#                 [0, 1, 0, 1],
-#                 [1, 1, 1, 0],
-#                 [0, 1, 1, 1]])
-# Y = np.array([1,1,1,1,1,1,0,1])
+# D3 = np.array([
+#               [0,0,0,1],
+#               [0,0,1,1],
+#               [0,1,0,1],
+#               [0,1,1,1],
+#               [1,0,0,0],
+#               [1,0,1,0],
+#               [1,1,0,0],
+#               [1,1,1,0]])
+# Y = np.array([1,1,1,1,1,1,1,0])
 # T = createdecisiontree(D3, Y)
 # print(T)
+
+# tree = [0,[1,[2,0,1],[2,0,1]],[1,[2,0,1],[2,0,1]]]
+# tree = redux(tree)
+# print(tree)

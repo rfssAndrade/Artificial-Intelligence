@@ -15,7 +15,7 @@ import os
 import imp
 import pickle
 
-origindir = "solutions/"
+origindir = "Proj2/solutions/"
 files = os.listdir(origindir)
             
         
@@ -77,9 +77,8 @@ for file in files:
                                     
                 print("<", idataset, "> #points >", D.shape[0], "#feat >", D.shape[1])
                 try:
-                    print(D)
-                    print(Y)
                     T = M.createdecisiontree(D,Y,noise=0)
+                    print(T)
                     Yp = classify(T,D)
                 
                     
@@ -105,7 +104,7 @@ for file in files:
                     #print("tree > ", T)
                 except:
                     print(R+"Test failed")
-            print("points", points, "/26", "short", pointsshort, "/2")
+            print("points", points, "/27", "short", pointsshort, "/2")
             
             # DATASETS WITH NOISE
             print("\n\n\t Testing robustness to noise\n\n")
