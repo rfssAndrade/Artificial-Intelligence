@@ -57,8 +57,8 @@ def getAValueExamples(examples, A, value):
 
 
 def Importance(attributes, examples):
-    higherGain = (attributes[0], 0)
-    for attribute in attributes:
+    higherGain = (attributes[0], Gain(attributes[0], examples))
+    for attribute in attributes[1:]:
         temp = Gain(attribute, examples)
         if temp > higherGain[1]:
             higherGain = (attribute, temp)
@@ -122,15 +122,15 @@ def decisionTreeLearning(examples, attributes, parent_examples):
 #                   [1,0],
 #                   [1,1]])
 # Y = np.array([1,1,0,0])
-# # D3 = np.array([
-# #               [0,0,0],
-# #               [0,0,1],
-# #               [0,1,0],
-# #               [0,1,1],
-# #               [1,0,0],
-# #               [1,0,1],
-# #               [1,1,0],
-# #               [1,1,1]])
-# # Y = np.array([0,1,1,0,0,1,1,0])
-# T = createdecisiontree(D, Y)
+# D3 = np.array([
+#               [0,0,0,1],
+#               [0,0,1,1],
+#               [0,1,0,1],
+#               [0,1,1,1],
+#               [1,0,0,0],
+#               [1,0,1,0],
+#               [1,1,0,0],
+#               [1,1,1,0]])
+# Y = np.array([1,1,1,1,1,1,1,0])
+# T = createdecisiontree(D3, Y)
 # print(T)
