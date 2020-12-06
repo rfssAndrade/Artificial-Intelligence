@@ -21,9 +21,22 @@ def createdecisiontree(D,Y, noise = False):
         examples += [D[e] + [Y[e]]]
 
     tree = decisionTreeLearning(examples, attributes, examples)
-    tree = redux(tree)
+    #tree = redux(tree)
+
+    # print("#################### DONE 1: " + str(tree))
     if type(tree) == int:
         tree = [0, tree, tree]
+    elif (type(tree[1]) == list and type(tree[2]) == list and tree[1][0] == tree[2][0]):
+        # print(tree[1][0])
+        print(tree)
+        newtree = redundance(tree[1][0], examples, attributes)
+        treesize = len(str(tree))
+        newtreesize = len(str(newtree))
+        tree = tree if treesize < newtreesize else newtree
+        print(tree)
+        # print("#################### DONE 2: " + str(tree))
+
+
     return tree
 
 
@@ -61,6 +74,7 @@ def Importance(attributes, examples):
     higherGain = (attributes[0], Gain(attributes[0], examples))
     for attribute in attributes[1:]:
         temp = Gain(attribute, examples)
+        # print(str(attribute) + ":" + str(temp))
         if temp > higherGain[1]:
             higherGain = (attribute, temp)
 
@@ -120,8 +134,11 @@ def decisionTreeLearning(examples, attributes, parent_examples):
     elif not attributes:
         return plurality_value(examples)
     else:
+        # print("------")
         A = Importance(attributes, examples)
+        # print("------")
         tree = [A]
+        # print("Choose " + str(A))
         for value in [0,1]:
             AValueExamples = getAValueExamples(examples, A, value)
             nattributes = copy.deepcopy(attributes)
@@ -141,6 +158,16 @@ def redux(tree):
     tree[1] = redux(tree[1])
     tree[2] = redux(tree[2])
     return tree
+
+
+def redundance(beginTree, examples, attributes):
+    attributes.remove(beginTree)
+    leftExamples = getAValueExamples(examples, beginTree, 0)
+    rightExamples = getAValueExamples(examples, beginTree, 1)
+    left = decisionTreeLearning(leftExamples, attributes, leftExamples)
+    right = decisionTreeLearning(rightExamples, attributes, rightExamples)
+
+    return [beginTree, left, right]
 
 # D = np.array([
 #                   [0,0],
@@ -164,3 +191,7 @@ def redux(tree):
 # tree = [0,[1,[2,0,1],[2,0,1]],[1,[2,0,1],[2,0,1]]]
 # tree = redux(tree)
 # print(tree)
+np.random.seed(13102020)
+D = np.random.rand(5000,12)>0.5
+Y = ((D[:,1] == 0) & (D[:,6] == 0)) | ((D[:,3] == 1) & (D[:,4] == 1) | ((D[:,11] == 1) & (D[:,6] == 1)))
+T = createdecisiontree(D, Y)

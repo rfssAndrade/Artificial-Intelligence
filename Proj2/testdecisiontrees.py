@@ -15,7 +15,7 @@ import os
 import imp
 import pickle
 
-origindir = "Proj2/solutions/"
+origindir = "solutions/"
 files = os.listdir(origindir)
             
         
