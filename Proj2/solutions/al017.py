@@ -21,20 +21,20 @@ def createdecisiontree(D,Y, noise = False):
         examples += [D[e] + [Y[e]]]
 
     tree = decisionTreeLearning(examples, attributes, examples)
-    #tree = redux(tree)
+    tree = redux(tree)
 
     # print("#################### DONE 1: " + str(tree))
     if type(tree) == int:
         tree = [0, tree, tree]
-    elif (type(tree[1]) == list and type(tree[2]) == list and tree[1][0] == tree[2][0]):
-        # print(tree[1][0])
-        print(tree)
-        newtree = redundance(tree[1][0], examples, attributes)
-        treesize = len(str(tree))
-        newtreesize = len(str(newtree))
-        tree = tree if treesize < newtreesize else newtree
-        print(tree)
-        # print("#################### DONE 2: " + str(tree))
+    # elif (type(tree[1]) == list and type(tree[2]) == list and tree[1][0] == tree[2][0]):
+    #     # print(tree[1][0])
+    #     print(tree)
+    #     newtree = redundance(tree[1][0], examples, attributes)
+    #     treesize = len(str(tree))
+    #     newtreesize = len(str(newtree))
+    #     tree = tree if treesize < newtreesize else newtree
+    #     print(tree)
+    #     # print("#################### DONE 2: " + str(tree))
 
 
     return tree
@@ -147,16 +147,34 @@ def decisionTreeLearning(examples, attributes, parent_examples):
             tree += [subtree]
     return tree
 
-def redux(tree):
+def redux(tree, repeat = False):
     if type(tree) == int:
         return tree
+    
     elif tree[1] == tree[2]:
         tree[0] = tree[1][0]
         tree[2] = tree[1][2]
         tree[1] = tree[1][1]
-        
+    
+    elif type(tree[1]) == list and type(tree[2]) == list and tree[1][0] == tree[2][0]:
+        if not repeat:        
+            tree = switchFatherGrandFather(tree)
+            tree = redux(tree, True)
+    
     tree[1] = redux(tree[1])
     tree[2] = redux(tree[2])
+
+    return tree
+
+
+def switchFatherGrandFather(tree):
+    temp = tree[0]
+    tree[0] = tree[1][0]
+    tree[1][0] = temp
+    tree[2][0] = temp
+    temp = tree[2][1]
+    tree[2][1] = tree[1][2]
+    tree[1][2] = temp
     return tree
 
 
@@ -191,7 +209,10 @@ def redundance(beginTree, examples, attributes):
 # tree = [0,[1,[2,0,1],[2,0,1]],[1,[2,0,1],[2,0,1]]]
 # tree = redux(tree)
 # print(tree)
-np.random.seed(13102020)
-D = np.random.rand(5000,12)>0.5
-Y = ((D[:,1] == 0) & (D[:,6] == 0)) | ((D[:,3] == 1) & (D[:,4] == 1) | ((D[:,11] == 1) & (D[:,6] == 1)))
-T = createdecisiontree(D, Y)
+# np.random.seed(13102020)
+# D = np.random.rand(5000,12)>0.5
+# Y = ((D[:,1] == 0) & (D[:,6] == 0)) | ((D[:,3] == 1) & (D[:,4] == 1) | ((D[:,11] == 1) & (D[:,6] == 1)))
+# T = createdecisiontree(D, Y)
+
+# tree = [6,[11,[1,1,[3,0,[4,0,1]]],[1,1,[3,0,[4,0,1]]]],[11,[4,0,[3,0,1]],1]]
+# print(redux(tree))

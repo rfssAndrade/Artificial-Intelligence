@@ -15,7 +15,7 @@ import os
 import imp
 import pickle
 
-origindir = "solutions/"
+origindir = "Proj2/solutions/"
 files = os.listdir(origindir)
             
         
@@ -79,8 +79,8 @@ for file in files:
                 try:
                     T = M.createdecisiontree(D,Y,noise=0)
                     print(T)
-                    Yp = classify(T,D)
-                
+                    print(D)
+                    Yp = classify(T,D)                
                     
                     err = np.mean(np.abs(Yp-Y))
                     l = len(str(T))
