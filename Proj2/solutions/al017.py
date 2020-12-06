@@ -19,23 +19,13 @@ def createdecisiontree(D,Y, noise = False):
     examples = []
     for e in range(len(D)):
         examples += [D[e] + [Y[e]]]
+    
+    maxDepth = nAttributes * 0.8
+    tree = decisionTreeLearning(examples, attributes, examples, maxDepth, noise)
+    tree = pruning(tree)
 
-    tree = decisionTreeLearning(examples, attributes, examples)
-    tree = prunning(tree)
-
-    # print("#################### DONE 1: " + str(tree))
     if type(tree) == int:
         tree = [0, tree, tree]
-    # elif (type(tree[1]) == list and type(tree[2]) == list and tree[1][0] == tree[2][0]):
-    #     # print(tree[1][0])
-    #     print(tree)
-    #     newtree = redundance(tree[1][0], examples, attributes)
-    #     treesize = len(str(tree))
-    #     newtreesize = len(str(newtree))
-    #     tree = tree if treesize < newtreesize else newtree
-    #     print(tree)
-    #     # print("#################### DONE 2: " + str(tree))
-
 
     return tree
 
@@ -69,12 +59,11 @@ def getAValueExamples(examples, A, value):
             AValueExamples += [example]
     return AValueExamples
 
-
+# Returns most significant attribute
 def Importance(attributes, examples):
-    higherGain = (attributes[0], Gain(attributes[0], examples))
+    higherGain = (attributes[0], Gain(attributes[0], examples)) # initialize tuple with first attribute
     for attribute in attributes[1:]:
         temp = Gain(attribute, examples)
-        # print(str(attribute) + ":" + str(temp))
         if temp > higherGain[1]:
             higherGain = (attribute, temp)
 
@@ -126,24 +115,23 @@ def Remainder(pk, nk, total):
     return p0 + p1
     
 
-def decisionTreeLearning(examples, attributes, parent_examples):
+def decisionTreeLearning(examples, attributes, parent_examples, maxDepth, noise):
     if not examples:
         return plurality_value(parent_examples)
     elif allHaveSameY(examples):
         return examples[0][-1]
     elif not attributes:
         return plurality_value(examples)
+    elif noise and maxDepth == 0:
+        return plurality_value(examples)
     else:
-        # print("------")
         A = Importance(attributes, examples)
-        # print("------")
         tree = [A]
-        # print("Choose " + str(A))
         for value in [0,1]:
             AValueExamples = getAValueExamples(examples, A, value)
             nattributes = copy.deepcopy(attributes)
             nattributes.remove(A)
-            subtree = decisionTreeLearning(AValueExamples, nattributes, examples)
+            subtree = decisionTreeLearning(AValueExamples, nattributes, examples, maxDepth - 1, noise)
             tree += [subtree]
     return tree
 
@@ -167,7 +155,7 @@ def redux(tree):
     return tree
 
 
-def prunning(tree):
+def pruning(tree):
     if type(tree) == int:
         return tree
     
@@ -179,8 +167,8 @@ def prunning(tree):
         if len(str(newTree)) < len(str(tree)):
             tree = newTree
     
-    tree[1] = prunning(tree[1])
-    tree[2] = prunning(tree[2])
+    tree[1] = pruning(tree[1])
+    tree[2] = pruning(tree[2])
 
     return tree
 
@@ -194,51 +182,3 @@ def switchFatherGrandFather(tree):
     tree[2][1] = tree[1][2]
     tree[1][2] = temp
     return tree
-
-
-# def redundance(beginTree, examples, attributes):
-#     attributes.remove(beginTree)
-#     leftExamples = getAValueExamples(examples, beginTree, 0)
-#     rightExamples = getAValueExamples(examples, beginTree, 1)
-#     left = decisionTreeLearning(leftExamples, attributes, leftExamples)
-#     right = decisionTreeLearning(rightExamples, attributes, rightExamples)
-
-#     return [beginTree, left, right]
-
-# D = np.array([
-#                   [0,0],
-#                   [0,1],
-#                   [1,0],
-#                   [1,1]])
-# Y = np.array([1,1,0,0])
-# D3 = np.array([
-#               [0,0,0,1],
-#               [0,0,1,1],
-#               [0,1,0,1],
-#               [0,1,1,1],
-#               [1,0,0,0],
-#               [1,0,1,0],
-#               [1,1,0,0],
-#               [1,1,1,0]])
-# Y = np.array([1,1,1,1,1,1,1,0])
-# T = createdecisiontree(D3, Y)
-# print(T)
-
-# tree = [0,[1,[2,0,1],[2,0,1]],[1,[2,0,1],[2,0,1]]]
-# tree = redux(tree)
-# print(tree)
-# np.random.seed(13102020)
-# D = np.random.rand(5000,12)>0.5
-# Y = ((D[:,1] == 0) & (D[:,6] == 0)) | ((D[:,3] == 1) & (D[:,4] == 1) | ((D[:,11] == 1) & (D[:,6] == 1)))
-# T = createdecisiontree(D, Y)
-
-# tree1 = [11,[6,[1,1,[3,0,[4,0,1]]],[4,0,[3,0,1]]],[6,[1,1,[3,0,[4,0,1]]],1]]
-# tree2 = [6,[11,[1,1,[3,0,[4,0,1]]],[1,1,[3,0,[4,0,1]]]],[11,[4,0,[3,0,1]],1]]
-# print(tree1)
-# print(prunning(tree1))
-# print(len(str(prunning(tree1))))
-# print(prunning(tree2))
-
-# tree3 = [0,[1,[3,0,1],[4,[6,[7,0,1],1],[6,[7,0,1],1]]],[2,[5,0,1],0]]
-# print(prunning(tree3))
-# tree3final = [0,[1,[3,0,1],[6,[7,0,1],1]],[2,[5,0,1],0]]
