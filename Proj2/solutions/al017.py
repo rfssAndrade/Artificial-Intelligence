@@ -57,7 +57,7 @@ def getAValueExamples(examples, A, value):
 
 
 def Importance(attributes, examples):
-    higherGain = (0, 0)
+    higherGain = (attributes[0], 0)
     for attribute in attributes:
         temp = Gain(attribute, examples)
         if temp > higherGain[1]:
