@@ -23,7 +23,7 @@ def createdecisiontree(D,Y, noise = False):
     
     maxDepth = nAttributes * 0.5
     tree = decisionTreeLearning(examples, attributes, examples, maxDepth, noise)
-    tree = pruning(tree)
+    tree = switchRedux(tree)
 
     if type(tree) == int:
         tree = [0, tree, tree]
@@ -138,6 +138,7 @@ def decisionTreeLearning(examples, attributes, parent_examples, maxDepth, noise)
     return tree
 
 
+# In case of both children being equal, the father is removed
 def redux(tree):
     if type(tree) == int:
         return tree
@@ -157,7 +158,8 @@ def redux(tree):
     return tree
 
 
-def pruning(tree):
+# If both fathers are the same attribute, does switches between father's and grandfather's nodes and applies redux in the resultant trees
+def switchRedux(tree):
     if type(tree) == int:
         return tree
     
@@ -169,12 +171,13 @@ def pruning(tree):
         if len(str(newTree)) < len(str(tree)):
             tree = newTree
     
-    tree[1] = pruning(tree[1])
-    tree[2] = pruning(tree[2])
+    tree[1] = switchRedux(tree[1])
+    tree[2] = switchRedux(tree[2])
 
     return tree
 
 
+# Switches the father's nodes with grandfather's node
 def switchFatherGrandFather(tree):
     temp = tree[0]
     tree[0] = tree[1][0]
