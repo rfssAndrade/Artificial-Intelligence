@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 """
 Grupo al017
-Student id #93696
-Student id #93750
+Student Daniel Quintas #93696
+Student Ricardo Andrade #93750
 """
 
 import numpy as np
 import random
 import math
 import copy
+
 
 def createdecisiontree(D,Y, noise = False):
     D = D.astype(int).tolist()
@@ -20,7 +21,7 @@ def createdecisiontree(D,Y, noise = False):
     for e in range(len(D)):
         examples += [D[e] + [Y[e]]]
     
-    maxDepth = nAttributes * 0.8
+    maxDepth = nAttributes * 0.5
     tree = decisionTreeLearning(examples, attributes, examples, maxDepth, noise)
     tree = pruning(tree)
 
@@ -52,6 +53,7 @@ def allHaveSameY(examples):
             return False
     return True
 
+
 def getAValueExamples(examples, A, value):
     AValueExamples = [] 
     for example in examples:
@@ -59,9 +61,9 @@ def getAValueExamples(examples, A, value):
             AValueExamples += [example]
     return AValueExamples
 
-# Returns most significant attribute
+
 def Importance(attributes, examples):
-    higherGain = (attributes[0], Gain(attributes[0], examples)) # initialize tuple with first attribute
+    higherGain = (attributes[0], Gain(attributes[0], examples))
     for attribute in attributes[1:]:
         temp = Gain(attribute, examples)
         if temp > higherGain[1]:
