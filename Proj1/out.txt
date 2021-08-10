@@ -1,8 +1,0 @@
-7
-Y r
-R r
-Y u
-R l
-Y r
-R r
-Y u
